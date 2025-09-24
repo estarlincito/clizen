@@ -1,7 +1,7 @@
 {
   "name": "clizen",
   "type": "module",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A minimal, flexible CLI framework for Node.js with commands, flags, and prompts.",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",

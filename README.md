@@ -15,6 +15,7 @@
 - 💬 Interactive prompts with async/sync handlers.
 - 🌐 TypeScript-ready with strong typings.
 - ⚡ Minimal dependencies, lightweight core.
+- 🛠️ Default commands/flags for fallback behavior.
 
 ---
 
@@ -65,7 +66,7 @@ await run();
 
 ### Commands
 
-Actions your CLI performs. Can be `repeatable: true` for multiple occurrences.
+Actions your CLI performs. Can be `repeatable: true` for multiple occurrences or `default: true` to run when no commands are specified.
 
 ```ts
 const demo = command(
@@ -85,10 +86,66 @@ Extra options, can be:
 - Required: warn if missing (`isRequired: true`)
 - Defaults: use when not provided (`defaultValue`)
 - Choices: allowed values (`choices`)
+- Default: run when no flags are specified (`default: true`)
 
 ```ts
 const verbose = flag(['--verbose', '-v'], () => {}, { isBoolean: true });
 ```
+
+---
+
+## Default Commands and Flags 🛠️
+
+The `default: true` option allows a command or flag to execute automatically when no other commands or flags are matched in the provided arguments. This is useful for defining fallback behavior, such as displaying a help message or performing a default action.
+
+- **Default Command**: Executes when no commands are provided. If arguments are passed, the first non-flag argument is used as `ctx.input`.
+- **Default Flag**: Executes when no flags are provided. If arguments are passed, the first non-flag argument is used as the flag’s value, or `defaultValue` is used if specified.
+- **Important**: Only one default definition (command or flag) should be used to avoid ambiguity. If multiple defaults are defined, Clizen warns and uses the first one.
+
+### Example: Default Command
+
+```ts
+const defaultCommand = command(
+  ['start'],
+  (ctx) => {
+    log(`Hello, ${ctx.input ?? 'World'}!`);
+  },
+  { default: true },
+);
+
+const run = cli(defaultCommand);
+
+await run(); // Logs: "Hello, World!" (default command, no input)
+await run(['start']); // Logs: "Hello, World!" (explicit command)
+await run(['greetings']); // Logs: "Hello, greetings!" (default command, uses 'greetings' as input)
+await run(['greetings', 'extra']); // Logs: "Hello, greetings!" and warns "Unknown arguments: extra"
+```
+
+### Example: Default Flag
+
+```ts
+const defaultFlag = flag(
+  ['--name', '-n'],
+  (ctx) => {
+    log(`Name: ${ctx.input}`);
+  },
+  { default: true, defaultValue: 'Guest' },
+);
+
+const run = cli(defaultFlag);
+
+await run(); // Logs: "Name: Guest" (default flag, uses defaultValue)
+await run(['Alice']); // Logs: "Name: Alice" (default flag, uses 'Alice' as input)
+await run(['--name', 'Bob']); // Logs: "Name: Bob" (explicit flag)
+await run(['Alice', 'extra']); // Logs: "Name: Alice" and warns "Unknown arguments: extra"
+```
+
+### Notes on Default Behavior
+
+- **Single Default**: Define only one default command or flag to avoid warnings about multiple defaults.
+- **Input Handling**: For default commands, the first unmatched argument becomes `ctx.input`. For default flags, it becomes the flag’s value in `ctx.flags['--primary-alias']`.
+- **Extra Arguments**: Unmatched arguments after the first are reported as unknown unless consumed by other logic (e.g., repeatable commands/flags).
+- **Validation**: For default flags, `ctx.input` is validated against `choices` if specified.
 
 ---
 
@@ -100,7 +157,7 @@ Handlers receive:
 interface Context {
   commands?: string[]; // Matched commands
   flags?: Record<string, any>; // Flag values
-  input?: string | boolean | number; // Raw input for current flag
+  input?: string | boolean | number | string[]; // Raw input for current command/flag
   options?: Record<string, any>; // Merged options from commands/flags
 }
 ```
@@ -155,6 +212,20 @@ const tagsFlag = flag(
 await cli(tagsFlag)(['--tag', 'dev', '--tag', 'prod']);
 ```
 
+### Default Command with Input
+
+```ts
+const defaultCommand = command(
+  ['start'],
+  (ctx) => {
+    log(`Hello, ${ctx.input ?? 'World'}!`);
+  },
+  { default: true },
+);
+
+await cli(defaultCommand)(['greetings']); // Logs: "Hello, greetings!"
+```
+
 ### Real CLI Usage
 
 ```ts
@@ -177,11 +248,12 @@ const ask = command(['ask'], async () => {
 ## Best Practices 📝
 
 1. Use **clear aliases** for commands and flags.
-2. Set **sensible defaults** for flags.
+2. Set **sensible defaults** for flags and default commands/flags.
 3. Validate inputs with `choices` or custom logic.
 4. Wrap risky logic in `try/catch`.
 5. Combine **prompts and flags** for best UX.
 6. Keep CLI output **clean and meaningful**.
+7. Use `default: true` sparingly to avoid ambiguous behavior.
 
 ---
 

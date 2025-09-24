@@ -16,6 +16,10 @@ export type CommandOptions = {
    * Whether the command can be repeated multiple times.
    */
   repeatable?: boolean;
+  /**
+   * Run if no command/flag provided
+   */
+  default?: boolean;
 } & Record<string, unknown>;
 
 /**

@@ -64,26 +64,19 @@ const nameFlag = flag(
   },
 );
 
-// Create CLI with all commands and flags
-const run = cli(demoCommand, helpFlag, versionFlag, nameFlag);
-
-// Run with process.argv
-const main = async () => {
-  const args = process.argv.slice(2);
-  const context = await run(args);
-
-  const hasCommands = (context.commands ?? []).length > 0;
-  const hasFlags = context.flags && Object.keys(context.flags).length > 0;
-
-  if (!args.length) {
+// Default command
+const defaultCommand = command(
+  ['start'],
+  () => {
     error(
       'No arguments provided. Use --help to see available commands and flags.',
     );
     process.exit(1);
-  } else if (!hasCommands && !hasFlags) {
-    error('No valid commands or flags provided. Use --help for usage.');
-    process.exit(1);
-  }
-};
+  },
+  { default: true },
+);
 
-await main();
+// Create CLI with all commands and flags
+const run = cli(demoCommand, helpFlag, versionFlag, nameFlag, defaultCommand);
+// Run with process.argv
+await run();
