@@ -95,7 +95,8 @@ type CliContext<T extends CommandOrFlag[]> = T extends [
  * //   node cli.js hello --name Bob
  * //
  * // This captures actual arguments passed to the script.
- * const context3 = await run(process.argv.slice(2));
+ * // No need to pass argv explicitly; defaults to process.argv.slice(2)
+ * const context3 = await run();
  * console.log(context3);
  * // Logs:
  * // "Name received: Bob"
@@ -104,8 +105,8 @@ type CliContext<T extends CommandOrFlag[]> = T extends [
 export const cli =
   <TDefinitions extends CommandOrFlag[]>(
     ...definitions: TDefinitions
-  ): ((argv: string[]) => Promise<CliContext<TDefinitions>>) =>
-  async (argv: string[]) => {
+  ): ((argv?: string[]) => Promise<CliContext<TDefinitions>>) =>
+  async (argv: string[] = process.argv.slice(2)) => {
     const context: Context = {
       commands: [],
       flags: {},
