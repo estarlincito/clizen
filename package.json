@@ -1,0 +1,74 @@
+{
+  "name": "clizen",
+  "type": "module",
+  "version": "0.0.1",
+  "description": "A minimal, flexible CLI framework for Node.js with commands, flags, and prompts.",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "bin": {
+    "clizen": "./dist/cli.js"
+  },
+  "scripts": {
+    "prepublishOnly": "pnpm clean && pnpm lint && pnpm check-types && pnpm build",
+    "release": "npm publish --access public",
+    "test": "vitest",
+    "check-types": "tsc --noEmit",
+    "lint": "ulint . --max-warnings 0",
+    "clean": "rm -rf dist",
+    "build": "pnpm vite build",
+    "dev": "pnpm vite build -w",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "command",
+    "terminal",
+    "clizen",
+    "cli",
+    "cmd",
+    "commander",
+    "react",
+    "next",
+    "node",
+    "javascript",
+    "typescript",
+    "esm",
+    "utility",
+    "helper",
+    "module",
+    "script",
+    "nodejs",
+    "project-setup"
+  ],
+  "author": {
+    "name": "Estarlin R",
+    "email": "dev@estarlincito.com",
+    "url": "https://estarlincito.com"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "dist"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/estarlincito/clizen#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/estarlincito/clizen.git"
+  },
+  "bugs": {
+    "url": "https://github.com/estarlincito/clizen/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.1",
+    "doglob": "^0.0.2",
+    "typescript": "^5.9.2",
+    "ulint": "^0.0.4",
+    "vite": "^7.1.4",
+    "eslint": "^9.36.0",
+    "prettier": "^3.6.2",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "dependencies": {
+    "lumilog": "^0.0.1"
+  }
+}
