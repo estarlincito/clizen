@@ -48,10 +48,7 @@ clizen --version
 ```ts
 import { cli } from 'clizen';
 
-cli
-  .name('clizen')
-  .version('0.0.1')
-  .description('A tiny, flexible CLI toolkit for Node.js');
+cli.name('my-cli').version('1.0.0').description('My project CLI tool');
 
 cli
   .argument('<projectDir>', 'Project directory to process')
@@ -78,10 +75,10 @@ cli.run();
 ### Example CLI Output
 
 ```bash
-$ clizen --help
-Usage: clizen [command] [options] <projectDir>
+$ my-cli --help
+Usage: my-cli [command] [options] <projectDir>
 
-A tiny, flexible CLI toolkit for Node.js
+My project CLI tool
 
 Arguments:
   <projectDir>     Project directory to process
@@ -96,13 +93,13 @@ Commands:
 ```
 
 ```bash
-$ clizen build src/**/*.ts --watch
+$ my-cli build src/**/*.ts --watch
 Building files: [ 'src/**/*.ts' ]
 Watching files...
 ```
 
 ```bash
-$ clizen inputDir --minify
+$ my-cli inputDir --minify
 Project directory: inputDir
 Output will be minified
 ```

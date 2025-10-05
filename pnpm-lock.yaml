@@ -11,9 +11,6 @@ importers:
       errfy:
         specifier: ^0.0.1
         version: 0.0.1
-      eslint:
-        specifier: ^9.37.0
-        version: 9.37.0
       lumilog:
         specifier: ^0.0.2
         version: 0.0.2
@@ -27,6 +24,9 @@ importers:
       doglob:
         specifier: ^0.0.2
         version: 0.0.2
+      eslint:
+        specifier: ^9.37.0
+        version: 9.37.0
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
