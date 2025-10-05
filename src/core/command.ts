@@ -1,107 +1,132 @@
-import { type Alias, alias, type Aliases } from '@/utils/alias.js';
+import { handleError } from '@/utils/error.js';
 
-import type { Handler } from './cli.js';
-
-/**
- * Options for configuring a CLI command.
- * Can include a description, repeatable behavior, and additional custom options.
- */
-export type CommandOptions = {
-  /**
-   * Brief description of what the command does.
-   */
-  description?: string;
-
-  /**
-   * Whether the command can be repeated multiple times.
-   */
-  repeatable?: boolean;
-  /**
-   * Run if no command/flag provided
-   */
-  default?: boolean;
-} & Record<string, unknown>;
+import { HelpCommand } from './help.js';
+import { ParseCommand } from './parser.js';
+import { RunCommand } from './run.js';
+import type {
+  Action,
+  Aliases,
+  Arguments,
+  Argvs,
+  Definition,
+  Description,
+  Flag,
+  Name,
+  Options,
+  Subcommands,
+  Version,
+} from './type.js';
 
 /**
- * Context provided to a command when executed.
- * Contains parsed options and any subcommands.
+ * Core class to define CLI commands, subcommands, options, arguments, and actions.
  */
-export interface CommandContext {
-  /**
-   * The options passed to the command.
-   */
-  options?: CommandOptions;
+export class Command {
+  #name: Name = '';
+  #version: Version = '';
+  #description: Description = '';
+  readonly #options: Options = new Map<string, string>();
+  readonly #arguments: Arguments = [];
+  #action?: Action;
+  readonly #subcommands: Subcommands = [];
+  readonly #aliases: Aliases = [];
 
-  /**
-   * Array of subcommands or arguments provided by the user.
-   */
-  commands?: string[];
-}
-
-/**
- * Represents a CLI command definition.
- */
-export interface Command {
-  /** Identifies this object as a command */
-  type: 'command';
-
-  /** The alias object for the command (e.g., `g` or `greet`) */
-  alias: Alias;
-
-  /**
-   * Function executed when the command is triggered.
-   * Receives the combined CLI context containing commands, flags, and options.
-   * Can be synchronous or return a Promise.
-   */
-  handler: Handler;
-
-  /** Optional configuration options for the command */
-  options?: CommandOptions;
-}
-
-/**
- * Creates a CLI command definition.
- *
- * @param {Aliases} aliases - Command aliases (string or array of strings). Example: `"g"` or `["g", "greet"]`.
- * @param {Handler} handler - Function to execute when the command is triggered.
- *   Receives `CommandContext` with options and commands. Can be sync or async.
- * @param {CommandOptions} [options] - Optional configuration options for the command.
- *   - `description` – Short description for the command.
- *   - `repeatable` – Allow the command to be repeated.
- *
- * @returns {Command} A command configuration object.
- *
- * @example
- * // Simple synchronous command
- * const greetCommand = command(["g", "greet"], (ctx) => {
- *   console.log("Hello!");
- * });
- *
- * @example
- * // Command with options and async handler
- * const greetAsyncCommand = command(
- *   ["g", "greet"],
- *   async (ctx) => {
- *     await someAsyncSetup(ctx.commands);
- *     console.log("Hello async!");
- *   },
- *   { description: "Greet the user", repeatable: true }
- * );
- */
-export const command = (
-  aliases: Aliases,
-  handler: Handler,
-  options?: CommandOptions,
-): Command => {
-  const commandObj: Command = {
-    alias: alias(aliases),
-    handler,
-    type: 'command',
-  };
-
-  if (options) {
-    commandObj.options = options;
+  /** Returns the internal definition of the command, including name, description, options, arguments, subcommands, etc. */
+  getDefinition(): Definition {
+    return {
+      action: this.#action,
+      aliases: this.#aliases,
+      arguments: this.#arguments,
+      description: this.#description,
+      name: this.#name,
+      options: this.#options,
+      subcommands: this.#subcommands,
+      version: this.#version,
+    };
   }
 
-  return commandObj;
-};
+  /** Sets the name of the command. */
+  name(name: Name): this {
+    this.#name = name;
+    return this;
+  }
+
+  /** Sets the version of the command. */
+  version(version: Version): this {
+    this.#version = version;
+    return this;
+  }
+
+  /** Sets the description of the command. */
+  description(description: Description): this {
+    this.#description = description;
+    return this;
+  }
+
+  /**
+   * Defines an option/flag for the command.
+   * @param flag - Must start with '--'.
+   * @param description - Description of the option.
+   */
+  option(flag: Flag, description: Description): this {
+    if (!/^--[a-zA-Z0-9][\w-]*$/.test(flag)) {
+      throw handleError(`Invalid option flag: ${flag}`);
+    }
+    this.#options.set(flag, description);
+    return this;
+  }
+
+  /**
+   * Defines a positional argument for the command.
+   * @param name - Name of the argument, e.g., '<file>' or '[dir]'.
+   * @param description - Description of the argument.
+   */
+  argument(name: Arguments[0]['name'], description: Description): this {
+    this.#arguments.push({ description, name });
+    return this;
+  }
+
+  /** Sets the action function that will run when this command is executed. */
+  action(fn: Action) {
+    this.#action = fn;
+    return this;
+  }
+
+  /**
+   * Creates a subcommand under this command.
+   * @param name - Name of the subcommand.
+   * @param description - Description of the subcommand.
+   */
+  command(name: Name, description: Description): Command {
+    const cmd = new Command();
+    cmd.#name = name;
+    cmd.#description = description;
+    this.#subcommands.push(cmd);
+    return cmd;
+  }
+
+  /** Adds aliases to this command. */
+  alias(...names: Name[]): this {
+    this.#aliases.push(...names);
+    return this;
+  }
+
+  /**
+   * Parses an array of arguments (default: process.argv.slice(2)) and returns a parsed object.
+   */
+  parse(argvs: Argvs = process.argv.slice(2)) {
+    return new ParseCommand(this, argvs).execute();
+  }
+
+  /**
+   * Runs the command with the given arguments.
+   * Handles flags like --help and --version automatically.
+   */
+  async run(argvs: Argvs = process.argv.slice(2)) {
+    await new RunCommand(this, argvs).execute();
+  }
+
+  /** Displays help for this command, optionally showing subcommands. */
+  help(showSubcommands: boolean = true): void {
+    return new HelpCommand(this, showSubcommands).execute();
+  }
+}

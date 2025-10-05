@@ -1,8 +1,8 @@
 {
   "name": "clizen",
   "type": "module",
-  "version": "0.0.3",
-  "description": "A minimal, flexible CLI framework for Node.js with commands, flags, and prompts.",
+  "version": "0.0.4",
+  "description": "A minimal, flexible CLI framework for Node.js to run commands and show help easily.",
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "bin": {
@@ -58,17 +58,20 @@
   "bugs": {
     "url": "https://github.com/estarlincito/clizen/issues"
   },
+  "dependencies": {
+    "errfy": "^0.0.1",
+    "eslint": "^9.37.0",
+    "lumilog": "^0.0.2"
+  },
   "devDependencies": {
     "@types/node": "^24.3.1",
+    "dirplus": "^0.0.3",
     "doglob": "^0.0.2",
-    "typescript": "^5.9.2",
-    "ulint": "^0.0.4",
-    "vite": "^7.1.4",
-    "eslint": "^9.36.0",
     "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "ulint": "^0.0.7",
+    "ulint-config-ts": "^0.0.7",
+    "vite": "^7.1.4",
     "vite-plugin-dts": "^4.5.4"
-  },
-  "dependencies": {
-    "lumilog": "^0.0.1"
   }
 }

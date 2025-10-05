@@ -1,6 +1,4 @@
 import { defineConfig } from 'ulint';
+import tsConfig from 'ulint-config-ts';
 
-export default defineConfig({
-  preset: 'ts',
-  rules: { '@typescript-eslint/no-explicit-any': 'off' },
-});
+export default defineConfig(tsConfig);

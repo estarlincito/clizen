@@ -3,7 +3,9 @@ import { doGlob } from 'doglob';
 import path from 'path';
 import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
-const entry = await doGlob(['src/**/*.ts'], { absolute: true });
+const entry = await doGlob(['src/**/*.ts', '!src/core/type.ts'], {
+  absolute: true,
+});
 
 const dtsPlugin = dts({
   entryRoot: 'src',
